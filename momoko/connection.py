@@ -752,7 +752,10 @@ class Connection(object):
         """
         kwargs = {"cursor_factory": cursor_factory} if cursor_factory else {}
         cursor = self.connection.cursor(**kwargs)
-        cursor.execute(operation, parameters)
+        try:
+            cursor.execute(operation, parameters)
+        except:
+            raise psycopg2.DataError("bad python string")
 
         future = Future()
         callback = partial(self._io_callback, future, cursor)
