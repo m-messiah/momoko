@@ -580,6 +580,26 @@ class MomokoPoolDataTest(PoolBaseDataTest, MomokoConnectionDataTest):
                 pass
         self.assertEqual(len(self.db.conns.busy), 0, msg="Some connections were not recycled")
 
+    # Bad formed python string
+    @gen_test
+    def test_execute(self):
+        """Testing execute"""
+        try:
+            sql = yield self.conn.execute("SELECT COUNT(*) FROM unittest_large_query WHERE name LIKE %s;", ('%2',))
+        except psycopg2.Error as error:
+            pass
+        try:
+            search = "WHERE name LIKE '%%s'"
+            sql = yield self.conn.execute("SELECT COUNT(*) FROM unittest_large_query %s;" % search)
+        except psycopg2.Error as error:
+            pass
+        try: 
+            search = "WHERE name LIKE '%%searchable' LIMIT %s" % 10
+            sql = yield self.conn.execute("SELECT COUNT(*) FROM unittest_large_query %s;" % search)
+        except psycopg2.Error as error:
+            pass
+        
+
 
 class MomokoPoolDataTestProxy(ProxyMixIn, MomokoPoolDataTest):
     pass
